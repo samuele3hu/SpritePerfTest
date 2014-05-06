@@ -9,10 +9,14 @@
 #import "SpriteMyScene.h"
 
 #define CCRANDOM_0_1() ((float)rand()/RAND_MAX)
+#define CC_DIRECTOR_STATS_INTERVAL (0.1f)
+#define CC_EXECUTE_STATS_INTERVAL (0.2f)
+#define MAX_AUTO_TEST_TIMES 25
 
 @implementation SpritePerfScene
 
 static int curCase;
+static bool statsState;
 
 -(id)initWithSize:(CGSize)size {
     if (self = [super initWithSize:size]) {
@@ -30,27 +34,27 @@ static int curCase;
     SKLabelNode *decrease = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
     
     decrease.text = @"-";
-    decrease.fontSize = 15;
+    decrease.fontSize = 35;
     decrease.fontColor = [SKColor greenColor];
     decrease.position = CGPointMake(CGRectGetMidX(self.frame) - 50,
-                                    CGRectGetMidY(self.frame) + 50);
+                                    CGRectGetMidY(self.frame) + 30);
     decrease.name = @"decrease";
     [self addChild:decrease];
     
     SKLabelNode *increase = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
     
     increase.text = @"+";
-    increase.fontSize = 15;
+    increase.fontSize = 35;
     increase.fontColor = [SKColor greenColor];
     increase.position = CGPointMake(CGRectGetMidX(self.frame) + 50,
-                                    CGRectGetMidY(self.frame) + 50);
+                                    CGRectGetMidY(self.frame) + 30);
     increase.name = @"increase";
     [self addChild:increase];
     
     SKLabelNode *subItem9 = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
     
     subItem9.text = @"9";
-    subItem9.fontSize = 15;
+    subItem9.fontSize = 30;
     subItem9.fontColor = [SKColor greenColor];
     subItem9.position = CGPointMake(CGRectGetMidX(self.frame) - 50,
                                     CGRectGetMidY(self.frame) - 50);
@@ -60,7 +64,7 @@ static int curCase;
     SKLabelNode *subItem10 = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
     
     subItem10.text = @"10";
-    subItem10.fontSize = 15;
+    subItem10.fontSize = 30;
     subItem10.fontColor = [SKColor greenColor];
     subItem10.position = CGPointMake(CGRectGetMidX(self.frame) + 50,
                                      CGRectGetMidY(self.frame) - 50);
@@ -74,7 +78,7 @@ static int curCase;
     itemNodeNum.fontSize = 15;
     itemNodeNum.fontColor = [SKColor greenColor];
     itemNodeNum.position = CGPointMake(CGRectGetMidX(self.frame),
-                                       CGRectGetMidY(self.frame) + 30);
+                                       CGRectGetMidY(self.frame) + 20);
     itemNodeNum.name = @"itemNodeNum";
     [self addChild:itemNodeNum];
     
@@ -95,6 +99,23 @@ static int curCase;
     next.position = CGPointMake(CGRectGetMidX(self.frame) + next.size.width * 2, CGRectGetMidY(self.frame) - back.size.height * 4);
     next.name = @"next";
     [self addChild:next];
+    
+    SKLabelNode *statsLabel = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
+    
+    if (![SpritePerfScene getStats]) {
+        statsLabel.text = @"stats off";
+    }
+    else
+    {
+        statsLabel.text = @"stats on";
+    }
+    
+    statsLabel.fontSize = 15;
+    statsLabel.fontColor = [SKColor greenColor];
+    statsLabel.position = CGPointMake(CGRectGetMidX(self.frame) + 120,
+                                    CGRectGetMidY(self.frame) + 10);
+    statsLabel.name = @"stats";
+    [self addChild:statsLabel];
 }
 
 - (int)getSubTestNum{
@@ -109,6 +130,13 @@ static int curCase;
     self.subtestNumber = subTest;
     self.lastRenderedCount = 0;
     self.quantityNodes     = 0;
+    self.accumDt           = 0.0;
+    self.lastUpdateTime    = 0.0;
+    self.frameCount        = 0;
+    self.frameRate         = 0.0;
+    self.arrFps            = [NSMutableArray arrayWithObjects:nil];
+    self.executeTimes      = 0;
+    self.lastExeStatusTime = 0.0;
     
     SKLabelNode *titleLabel = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
     titleLabel.text = [self curTitle];
@@ -252,6 +280,18 @@ static int curCase;
             self.subtestNumber = 10;
             [self showCurTest];
         }
+        else if ([node.name isEqual:@"stats"])
+        {
+            bool curState = [SpritePerfScene getStats];
+            [SpritePerfScene setStats:!curState];
+            if (curState) {
+                ((SKLabelNode*)node).text = @"stats off";
+            }
+            else
+            {
+                ((SKLabelNode*)node).text = @"stats on";
+            }
+        }
     }
 }
 
@@ -301,8 +341,73 @@ static int curCase;
     return curCase;
 }
 
+- (void)dumpProfileFps{
+    if ([self.arrFps count] == 0) {
+        return;
+    }
+
+    float minFps = [[self.arrFps objectAtIndex: 0] floatValue];
+    float maxFps = [[self.arrFps objectAtIndex: 0] floatValue];
+    float totalFps = 0.0f;
+    float averageFps = 0.0f;
+          
+    for (int i = 0 ; i < [self.arrFps count]; i++) {
+        float fps = [[self.arrFps objectAtIndex:i] floatValue];
+        minFps = MIN(minFps, fps);
+        maxFps = MAX(maxFps, fps);
+        totalFps += fps;
+    }
+    
+    averageFps = totalFps / [self.arrFps count];
+    
+    NSLog(@"Cur test: %d, cur sub item :%d,cur sprite nums:%d, the min FPS value is %.1f,the max FPS value is %.1f,the averager FPS is %.1f", [SpritePerfScene getCurCase], self.subtestNumber, self.quantityNodes, minFps, maxFps, averageFps);
+    
+    [self.arrFps removeAllObjects];
+    self.executeTimes = 0;
+    [SpritePerfScene setStats:false];
+    SKLabelNode* labelNode = (SKLabelNode*)[self childNodeWithName:@"stats"];
+    labelNode.text = @"stats off";
+}
+
 -(void)update:(CFTimeInterval)currentTime {
     /* Called before each frame is rendered */
+    if (self.lastUpdateTime != 0) {
+        self.accumDt += currentTime - self.lastUpdateTime;
+    }
+    
+    self.frameCount += 1;
+    self.lastUpdateTime = currentTime;
+    
+    if (self.accumDt > CC_DIRECTOR_STATS_INTERVAL)
+    {
+        self.frameRate  = (double)self.frameCount / (double)(self.accumDt);
+        self.frameCount = 0;
+        self.accumDt = 0;
+    }
+    
+    if ([SpritePerfScene getStats])
+    {
+        if (currentTime - self.lastExeStatusTime > CC_EXECUTE_STATS_INTERVAL)
+        {
+            self.executeTimes += 1;
+            self.lastExeStatusTime = currentTime;
+            [self.arrFps addObject:[NSNumber numberWithFloat:self.frameRate]];
+            
+            if (self.executeTimes >= MAX_AUTO_TEST_TIMES) {
+                [self dumpProfileFps];
+            }
+        }
+    }
+}
+
++ (void)setStats:(bool)state{
+    statsState = state;
+}
+
+
++ (bool)getStats
+{
+    return statsState;
 }
 
 @end
