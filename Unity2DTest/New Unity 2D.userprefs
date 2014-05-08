@@ -1,0 +1,18 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/DecreaseLabel.js">
+    <Files>
+      <File FileName="Assets/Scripts/MainScript.js" Line="63" Column="38" />
+      <File FileName="Assets/Scripts/DecreaseLabel.js" Line="3" Column="1" />
+      <File FileName="Assets/Scripts/IncreaseBehaviourScript.js" Line="7" Column="1" />
+      <File FileName="Assets/Scripts/BackBehaviourScript.js" Line="7" Column="2" />
+      <File FileName="Assets/Scripts/RestartBehaviourScript.js" Line="6" Column="1" />
+      <File FileName="Assets/Scripts/NextBehaviourScript.js" Line="5" Column="2" />
+      <File FileName="Assets/Scripts/StatsBehaviourScript.js" Line="10" Column="2" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
