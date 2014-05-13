@@ -1,0 +1,22 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Main.js">
+    <Files>
+      <File FileName="Assets/Scripts/BackScript.js" Line="10" Column="22" />
+      <File FileName="Assets/Scripts/Main.js" Line="621" Column="28" />
+      <File FileName="Assets/Scripts/IncreaseScript.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/DecreaseScript.js" Line="3" Column="1" />
+      <File FileName="Assets/Scripts/TitleScript.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/SubItem9Script.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/SubItem11Script.js" Line="10" Column="24" />
+      <File FileName="Assets/Scripts/NextScript.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/RestartScript.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/StatsScript.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/FpsScript.js" Line="57" Column="2" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
